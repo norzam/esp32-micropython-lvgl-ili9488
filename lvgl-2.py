@@ -433,9 +433,7 @@ def m4():
     lbl_btn_t4_1.set_text(lv.SYMBOL.HOME)
 
 
-# home screen
-
-def m5():
+def m5(): # home screen
            
     scr = lv.obj()
     lv.scr_load(scr)
@@ -451,14 +449,7 @@ def m5():
             m4() #trigger config
             
         if (obj == btn3) and (event == lv.EVENT.CLICKED):
-            
-            while True:
-                
-                lv.task_handler()
-                print('Hello World')
-                lv.tick_inc(5)
-                
-                
+            return
                 
     #wifi 
     
@@ -479,28 +470,48 @@ def m5():
     #run loop
     
     btn3 = lv.btn(scr)
-    btn3.align(btn2, lv.ALIGN.OUT_BOTTOM_MID,0,0)
+    btn3.align(btn2, lv.ALIGN.OUT_BOTTOM_MID,0,10)
     btn3.set_event_cb(btn_event)
     
 
 def m6(): #wifi
     
+    def btn_event(obj, event):
+        
+        if obj == btn2 and event == lv.EVENT.CLICKED:
+            
+            m5()
+        
+        if obj == ta and event == lv.EVENT.CLICKED:
+            kb = lv.keyboard(scr)
+            kb.set_textarea(ta)
+        
+            
+            
+            
+    
     scr = lv.obj()
     lv.scr_load(scr)
     
     tab = lv.tabview(scr)
-    tab.align(scr, lv.ALIGN.IN_TOP_MID,0,0)
-    
+   
     tab1 = tab.add_tab("Wifi Settings")
-    tab1.align(tab, lv.ALIGN.CENTER,0,0)
+    
+    btn2 = lv.btn(tab)
+    btn2.align(tab, lv.ALIGN.IN_TOP_LEFT,0,0)
+    lbl_btn2 = lv.label(btn2)
+    lbl_btn2.set_text(lv.SYMBOL.HOME)
+    btn2.set_fit(lv.FIT.TIGHT)
+    btn2.set_event_cb(btn_event)
         
-    cont = lv.cont(scr)
-    cont.align(tab1, lv.ALIGN.OUT_TOP_MID,0,10)  
-    cont.set_layout(lv.LAYOUT.PRETTY_MID)
+    cont = lv.cont(tab1)
+    cont.align(tab1, lv.ALIGN.IN_TOP_MID,0,20)  
     cont.set_fit2(lv.FIT.TIGHT,lv.FIT.TIGHT)
         
     ta = lv.textarea(cont)
-    ta.align(cont, lv.ALIGN.IN_TOP_MID,0,0)
+    ta.align(cont, lv.ALIGN.IN_TOP_MID,0,10)
+    ta.set_one_line(True)
+    ta.set_event_cb(btn_event)
     
     btn = lv.btn(cont)
     btn.align(ta, lv.ALIGN.OUT_BOTTOM_MID,0,0)
@@ -514,21 +525,26 @@ def m6(): #wifi
     #sta_if.active(True)
     #sta_if.connect("norzam5001-93A8", "")
     #sta_if.isconnected()
+    
             
 def m_task():
     
     m5()
     
-    #current_tick
-    #previous_tick
-    #tick_interval
+    current = 0
+    previous = 0
+    treshold = 1000
     
     while True:
         
         lv.task_handler()
         lv.tick_inc(5)
         
+        current = utime.ticks_ms()
         
+        if current - previous > treshold:
+            print('hello world')
+            previous = utime.ticks_ms()
         
 m_task()
 
