@@ -603,18 +603,24 @@ def m5():
     #1st column
     b1 = lv.btn(scr)
     b1.align(cont, lv.ALIGN.OUT_BOTTOM_LEFT, 10, 10)
+    b1.set_height(100)
+    b1.set_style_local_radius(0,0,0)
     b1.set_event_cb(btn_event) #callback
     lbl_b1 = lv.label(b1) 
     lbl_b1.set_text("Timer Config")
         
     b3 = lv.btn(scr)
     b3.align(b1, lv.ALIGN.OUT_BOTTOM_MID, 0, 10)
+    b3.set_height(100)
+    b3.set_style_local_radius(0,0,0)
     b3.set_event_cb(btn_event)
     lbl_b3 = lv.label(b3)
     lbl_b3.set_text("System Log")
     
     b5 = lv.btn(scr)
     b5.align(b3, lv.ALIGN.OUT_BOTTOM_MID, 0, 10)
+    b5.set_height(100)
+    b5.set_style_local_radius(0,0,0)
     b5.set_event_cb(btn_event)
     lbl_b5 = lv.label(b5)
     lbl_b5.set_text("Manual Control")
@@ -623,18 +629,24 @@ def m5():
     #2nd column
     b2 = lv.btn(scr)
     b2.align(cont, lv.ALIGN.OUT_BOTTOM_RIGHT, -10, 10)
+    b2.set_height(100)
+    b2.set_style_local_radius(0,0,0)
     b2.set_event_cb(btn_event)
     lbl_b2 = lv.label(b2)
     lbl_b2.set_text("Wifi Config")
            
     b4 = lv.btn(scr)
     b4.align(b2, lv.ALIGN.OUT_BOTTOM_MID, 0, 10)
+    b4.set_height(100)
+    b4.set_style_local_radius(0,0,0)
     b4.set_event_cb(btn_event)
     lbl_b4 = lv.label(b4)
     lbl_b4.set_text("Clock Config")
     
     b6 = lv.btn(scr)
     b6.align(b4, lv.ALIGN.OUT_BOTTOM_MID, 0, 10)
+    b6.set_height(100)
+    b6.set_style_local_radius(0,0,0)
     b6.set_event_cb(btn_event)
     lbl_b6 = lv.label(b6)
     lbl_b6.set_text("Phone Config")
@@ -736,7 +748,10 @@ def m6():    #Wifi Settings
         list_btn = lv.list.__cast__(obj)
         
         if event == lv.EVENT.CLICKED:
+            
             print(list_btn.get_btn_text())
+            
+            m6_1(list_btn.get_btn_text())
             
     def btn_event(obj, event):
         
@@ -805,7 +820,106 @@ def m6():    #Wifi Settings
     switch.set_event_cb(btn_event)
     
     
+
+def m6_1(data): #wifi password window
     
+    #button events
+    def btn_event(obj, event):
+        
+        if obj == home and event == lv.EVENT.CLICKED:
+            m5()
+            
+    def kbd_event_cb(obj, event):
+        
+        obj.def_event_cb(event)
+            
+        if event == lv.EVENT.APPLY:
+           
+           print('OK button pressed')
+           print(password.get_text())
+           obj.delete()
+           
+           print('connecting to ' + data)
+           print('using password ' + password.get_text())
+           
+           log = lv.label(scr)
+           log.align(cont1, lv.ALIGN.OUT_BOTTOM_MID,0,10)
+           text = 'Trying to connect'
+           
+           if not sta_if.isconnected():
+               log.set_text(text)
+               
+               sta_if.connect(data, password.get_text())
+               while not sta_if.isconnected():
+                   text = text + " . "
+                   log.set_text(text)
+           
+           #if successful
+           log.set_text('Successfully connected')
+           log.align(cont1, lv.ALIGN.OUT_BOTTOM_MID,0,10)
+           
+               
+
+    
+    #main page
+    scr = lv.obj()
+    lv.scr_load(scr)
+    
+    #top tab dengan home button
+    cont = lv.cont(scr)
+    cont.set_auto_realign(True)
+    cont.set_style_local_radius(0,0,0)
+    cont.align(scr, lv.ALIGN.IN_TOP_MID,0,0)
+    cont.set_fit2(lv.FIT.PARENT, lv.FIT.TIGHT)
+    
+    #home button
+    home = lv.btn(cont)
+    home.align(cont, lv.ALIGN.IN_LEFT_MID, 0,10)
+    home.set_fit2(lv.FIT.TIGHT, lv.FIT.TIGHT)
+    home.set_event_cb(btn_event)
+    lbl_home = lv.label(home)
+    lbl_home.set_text(lv.SYMBOL.HOME)
+    
+    #label top tab
+    
+    lbl_top = lv.label(cont)
+    lbl_top.set_text("Wifi Config")
+    lbl_top.align(home, lv.ALIGN.OUT_RIGHT_MID,10,0)
+    
+    #set wifi
+    
+    cont1 = lv.cont(scr)
+    cont1.set_auto_realign(True)
+    cont1.align(cont, lv.ALIGN.OUT_BOTTOM_MID,0,20)
+    cont1.set_fit2(lv.FIT.TIGHT, lv.FIT.TIGHT)
+    
+    lbl_en_wifi = lv.label(cont1)
+    lbl_en_wifi.set_text("Connecting to " + data)
+    lbl_en_wifi.align(cont1, lv.ALIGN.IN_LEFT_MID, 10, 10)
+    
+    lbl_in_pass = lv.label(cont1)
+    lbl_in_pass.set_text("Insert Wifi password : ")
+    lbl_in_pass.align(lbl_en_wifi, lv.ALIGN.OUT_BOTTOM_MID,0, 10)
+    
+    #text area for password
+    
+    password = lv.textarea(cont1)
+    password.set_size(200,50)
+    password.align(lbl_in_pass, lv.ALIGN.OUT_BOTTOM_MID,0,10)
+    password.set_pwd_mode(True)
+    password.set_text("")
+    
+    keyboard = lv.keyboard(scr)
+    keyboard.set_size(320, 480 // 2)
+    keyboard.set_textarea(password)
+    keyboard.set_cursor_manage(False)
+    keyboard.set_event_cb(kbd_event_cb)
+            
+            
+            
+            
+            
+            
             
             
 def m_task():
@@ -817,6 +931,7 @@ def m_task():
     treshold = 1000
     
     while True:
+        
         
         lv.task_handler()
         lv.tick_inc(5)        
