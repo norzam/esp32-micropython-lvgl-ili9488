@@ -1,5 +1,6 @@
 '''
 PROTOTYPE
+automatic create all button from list
 '''
 
 import espidf as esp
@@ -37,13 +38,13 @@ scr = lv.obj()
 lv.scr_load(scr)
 
 cont = lv.cont(scr)
-cont.set_auto_realign(True)
-cont.set_fit2(lv.FIT.PARENT, lv.FIT.PARENT)
+cont.set_auto_realign(False)
+cont.set_fit2(lv.FIT.PARENT, lv.FIT.TIGHT)
 cont.set_layout(lv.LAYOUT.PRETTY_TOP)
 
 btn_list = []
 label_list = []
-label_properties = ['Norzam', 'Norfiza', 'Hana', 'Aina', 'Alya']
+label_properties = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 
 def btn_event(obj, event):
     
@@ -51,12 +52,15 @@ def btn_event(obj, event):
         btn_position = btn_list.index(obj) 
         print(label_list[btn_position].get_text())
         
+list_range = len(label_properties)
 
-for i in range(0,5):
+#use list range to create all buttons
+for i in range(0, list_range):
     btn_list.append(lv.btn(cont))
-    btn_list[i].set_height(100)
+    btn_list[i].set_fit2(lv.FIT.TIGHT, lv.FIT.TIGHT)
     btn_list[i].set_style_local_radius(0,0,0)
     btn_list[i].set_event_cb(btn_event)
+    btn_list[i].set_drag(True)
     
     label_list.append(lv.label(btn_list[i]))
     label_list[i].set_text(label_properties[i])
