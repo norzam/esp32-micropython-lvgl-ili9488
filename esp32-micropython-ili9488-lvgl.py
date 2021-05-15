@@ -576,8 +576,8 @@ def m5():
         if obj == b2 and event == lv.EVENT.CLICKED:    #Wifi Config
             m6() #temp
             
-        if obj == b3 and event == lv.EVENT.CLICKED:    #System Log
-            m5() #temp
+        if obj == b3 and event == lv.EVENT.CLICKED:    #Dashborad
+            m7() #temp
             
         if obj == b4 and event == lv.EVENT.CLICKED:
             m5() #temp
@@ -615,7 +615,7 @@ def m5():
     b3.set_style_local_radius(0,0,0)
     b3.set_event_cb(btn_event)
     lbl_b3 = lv.label(b3)
-    lbl_b3.set_text("System Log")
+    lbl_b3.set_text("Dashboard")
     
     b5 = lv.btn(scr)
     b5.align(b3, lv.ALIGN.OUT_BOTTOM_MID, 0, 10)
@@ -916,12 +916,67 @@ def m6_1(data): #wifi password window
     keyboard.set_event_cb(kbd_event_cb)
             
             
-            
-            
-            
-            
-            
-            
+def m7(): # dashboard
+
+    #btn_event
+
+    def btn_event(obj, event):
+
+        if obj == home_button and event == lv.EVENT.CLICKED:
+            m5()
+
+    #gui code
+
+    scr = lv.obj()
+    lv.scr_load(scr)
+
+    cont = lv.cont(scr)
+    cont.align(scr, lv.ALIGN.IN_TOP_MID, 0, 0)
+    cont.set_style_local_radius(0, 0, 0)
+    cont.set_fit2(lv.FIT.PARENT, lv.FIT.TIGHT)
+
+    home_button = lv.btn(cont)
+    home_button.align(cont, lv.ALIGN.IN_LEFT_MID,0,10)
+    home_button.set_fit(lv.FIT.TIGHT)
+    home_button.set_event_cb(btn_event)
+    
+    lbl_home = lv.label(home_button)
+    lbl_home.set_text(lv.SYMBOL.HOME)
+    
+    lbl_header = lv.label(cont)
+    lbl_header.set_text("Dashboard")
+    lbl_header.align(home_button, lv.ALIGN.OUT_RIGHT_MID,10,0)
+
+    tab_header = lv.tabview(scr)
+    tab_header.align(cont, lv.ALIGN.OUT_BOTTOM_MID, 0, 0)
+
+    tab1 = tab_header.add_tab("Triggers")
+    tab2 = tab_header.add_tab("Switches")
+    tab3 = tab_header.add_tab("Sensors")
+    tab4 = tab_header.add_tab("Charts")
+
+    #tab1 : Triggers
+    
+    '''
+    tab1.set_auto_realign(True)
+    tab1.set_layout(lv.LAYOUT.PRETTY_TOP)
+    '''
+    cont1 = lv.cont(tab1)
+    cont1.set_auto_realign(True)
+    cont1.set_layout(lv.LAYOUT.PRETTY_TOP)
+    
+    card = []
+    
+    for i in range(0, len(trigger)):
+        
+        card.append(lv.cont(cont1))
+        card[i].set_width(100)
+        lbl_trigger = lv.label(card[i])
+        lbl_trigger.set_text("Trigger " + str(i))
+        
+
+    #making trigger cards
+   
 def m_task():
     
     m5()
