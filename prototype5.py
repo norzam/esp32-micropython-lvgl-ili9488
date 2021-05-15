@@ -1,5 +1,6 @@
 '''
 PROTOTYPE
+automatic create all button from list
 '''
 
 import espidf as esp
@@ -11,6 +12,8 @@ import time
 import machine
 import utime
 import network
+import urequest
+from lv_colors import lv_colors
 
 sta_if = network.WLAN(network.STA_IF)
 
@@ -37,33 +40,32 @@ scr = lv.obj()
 lv.scr_load(scr)
 
 cont = lv.cont(scr)
-cont.set_auto_realign(True)
-cont.set_fit2(lv.FIT.PARENT, lv.FIT.PARENT)
+cont.set_auto_realign(False)
+cont.set_fit2(lv.FIT.PARENT, lv.FIT.TIGHT)
 cont.set_layout(lv.LAYOUT.PRETTY_TOP)
 
-btn_list = []
-label_list = []
-label_properties = ['Norzam', 'Norfiza', 'Hana', 'Aina', 'Alya']
-
-def btn_event(obj, event):
-    
-    if event == lv.EVENT.CLICKED:
-        btn_position = btn_list.index(obj) 
-        print(label_list[btn_position].get_text())
-        
-
-for i in range(0,5):
-    btn_list.append(lv.btn(cont))
-    btn_list[i].set_height(100)
-    btn_list[i].set_style_local_radius(0,0,0)
-    btn_list[i].set_event_cb(btn_event)
-    
-    label_list.append(lv.label(btn_list[i]))
-    label_list[i].set_text(label_properties[i])
-    
+sta_if = network.WLAN(network.STA_IF)
+sta_if.active(True)
+sta_if.connect('norzam5001-93A8', '74221486')
+while sta_if.isconnected() == False:
+    print('.')
 
 
+chart = lv.chart(cont)
+chart.set_size(200, 300)
+chart.set_type(lv.chart.TYPE.LINE)
+
+ser1 = chart.add_series(lv_colors.RED)
+
+import json
+
+# binance data
+while True:
     
     
     
-    
+    data = urequest.get('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT')
+    print(data.content)
+    chart.set_next(ser1, float((json.loads(data.content))['price']))
+    time.sleep(10)
+
