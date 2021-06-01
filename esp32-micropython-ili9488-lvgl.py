@@ -961,8 +961,10 @@ def m7(): # dashboard
     tab1.set_auto_realign(True)
     tab1.set_layout(lv.LAYOUT.PRETTY_TOP)
     '''
+    
     cont1 = lv.cont(tab1)
     cont1.set_auto_realign(True)
+    cont1.set_fit2(lv.FIT.TIGHT, lv.FIT.TIGHT)
     cont1.set_layout(lv.LAYOUT.PRETTY_TOP)
     
     card = []
@@ -970,11 +972,12 @@ def m7(): # dashboard
     for i in range(0, len(trigger)):
         
         card.append(lv.cont(cont1))
-        card[i].set_width(100)
+        card[i].set_width(220)
+        card[i].set_height(100)
+        
         lbl_trigger = lv.label(card[i])
         lbl_trigger.set_text("Trigger " + str(i))
         
-
     #making trigger cards
    
 def m_task():
