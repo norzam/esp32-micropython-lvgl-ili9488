@@ -968,13 +968,17 @@ def m7(): # dashboard
     tab1.set_layout(lv.LAYOUT.PRETTY_TOP)
     '''
     
+<<<<<<< HEAD
     #tab1.set_auto_realign(True)
     #tab1.set_layout(lv.LAYOUT.PRETTY_TOP)
     
+=======
+>>>>>>> 89a4ca1bbb504fb832023ae83c028e991a8fe279
     cont1 = lv.cont(tab1)
     cont1.align(tab1, lv.ALIGN.IN_TOP_MID, 0, 10)
     cont1.set_fit2(lv.FIT.PARENT, lv.FIT.TIGHT)
     cont1.set_auto_realign(True)
+    cont1.set_fit2(lv.FIT.TIGHT, lv.FIT.TIGHT)
     cont1.set_layout(lv.LAYOUT.PRETTY_TOP)
     
     card = []
@@ -982,6 +986,7 @@ def m7(): # dashboard
     for i in range(0, len(trigger)):
         
         card.append(lv.cont(cont1))
+<<<<<<< HEAD
         card[i].set_fit2(lv.FIT.TIGHT, lv.FIT.TIGHT)
         
         '''set color.'''
@@ -991,15 +996,22 @@ def m7(): # dashboard
         if trigger[i].isTriggered == False:
             card[i].set_style_local_bg_color(lv.obj.PART.MAIN, lv.STATE.DEFAULT, lv.color_hex(0xffcccc))
                    
+=======
+        card[i].set_width(220)
+        card[i].set_height(100)
+>>>>>>> 89a4ca1bbb504fb832023ae83c028e991a8fe279
         
         lbl_trigger = lv.label(card[i])
         lbl_trigger.align(card[i], lv.ALIGN.IN_TOP_LEFT,0,0)
         lbl_trigger.set_text("Trigger " + str(i))
         
+<<<<<<< HEAD
         lbl_start = lv.label(card[i])
         lbl_start.align(lbl_trigger, lv.ALIGN.OUT_BOTTOM_LEFT,0,0)
         lbl_start.set_text("On : " + "{}:{}:{}".format(str(trigger[i].bhour), str(trigger[i].bminute), str(trigger[i].bsecond)))
         
+=======
+>>>>>>> 89a4ca1bbb504fb832023ae83c028e991a8fe279
     #making trigger cards
    
 def m_task():
