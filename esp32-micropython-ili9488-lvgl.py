@@ -22,7 +22,7 @@ lv.init()
 
 from ili9XXX import ili9488
 disp = ili9488(miso=19, mosi=23, clk=18, cs=5, dc=26, rst=27, power=14, backlight=-1, backlight_on=0, power_on=0, rot=0x80,
-        spihost=esp.VSPI_HOST, mhz=60, factor=8, hybrid=True, width=320, height=480,
+        spihost=esp.VSPI_HOST, mhz=50, factor=8, hybrid=True, width=320, height=480,
         invert=False, double_buffer=True, half_duplex=True)
 
 from xpt2046 import xpt2046
@@ -562,7 +562,7 @@ def m5(): # home screen
     btn3.set_event_cb(btn_event)
 '''
 
-def m5():
+def m5(): #Main home screen
     
     scr = lv.obj()
     lv.scr_load(scr)
@@ -590,13 +590,19 @@ def m5():
             
     #top tab
     cont = lv.cont(scr)
-    cont.align(scr, lv.ALIGN.IN_TOP_LEFT,0,0)
+    cont.align(scr, lv.ALIGN.IN_TOP_MID,0,0)
+    cont.set_auto_realign(True)
+    cont.set_height(20)
     cont.set_fit2(lv.FIT.PARENT, lv.FIT.TIGHT)
     lbl_today = lv.label(cont)
+    lbl_today.align(cont, lv.ALIGN.IN_LEFT_MID, 0, 0)
     
-    lbl_today.set_text("Sunday     14-01-2021     {}:{}:{}".format(str(clock.hour),str(clock.minute),str(clock.second)))
+    def gui_refresh_date():
+        lbl_today.set_text("Sunday     14-01-2021     {}:{}:{}".format(str(clock.hour),str(clock.minute),str(clock.second)))
     
-    lbl_today.align(cont, lv.ALIGN.CENTER,0,10)
+    lv.task_create(lambda task: gui_refresh_date(), 100, lv.TASK_PRIO.HIGH, None)
+    
+    #lbl_today.align(cont, lv.ALIGN.CENTER,0,10)
  
  #List of boxes using button
     
@@ -961,7 +967,13 @@ def m7(): # dashboard
     tab1.set_auto_realign(True)
     tab1.set_layout(lv.LAYOUT.PRETTY_TOP)
     '''
+    
+    #tab1.set_auto_realign(True)
+    #tab1.set_layout(lv.LAYOUT.PRETTY_TOP)
+    
     cont1 = lv.cont(tab1)
+    cont1.align(tab1, lv.ALIGN.IN_TOP_MID, 0, 10)
+    cont1.set_fit2(lv.FIT.PARENT, lv.FIT.TIGHT)
     cont1.set_auto_realign(True)
     cont1.set_layout(lv.LAYOUT.PRETTY_TOP)
     
@@ -970,11 +982,24 @@ def m7(): # dashboard
     for i in range(0, len(trigger)):
         
         card.append(lv.cont(cont1))
-        card[i].set_width(100)
+        card[i].set_fit2(lv.FIT.TIGHT, lv.FIT.TIGHT)
+        
+        '''set color.'''
+        if trigger[i].isTriggered == True:
+            card[i].set_style_local_bg_color(lv.obj.PART.MAIN, lv.STATE.DEFAULT, lv.color_hex(0xe6ffb3))
+        
+        if trigger[i].isTriggered == False:
+            card[i].set_style_local_bg_color(lv.obj.PART.MAIN, lv.STATE.DEFAULT, lv.color_hex(0xffcccc))
+                   
+        
         lbl_trigger = lv.label(card[i])
+        lbl_trigger.align(card[i], lv.ALIGN.IN_TOP_LEFT,0,0)
         lbl_trigger.set_text("Trigger " + str(i))
         
-
+        lbl_start = lv.label(card[i])
+        lbl_start.align(lbl_trigger, lv.ALIGN.OUT_BOTTOM_LEFT,0,0)
+        lbl_start.set_text("On : " + "{}:{}:{}".format(str(trigger[i].bhour), str(trigger[i].bminute), str(trigger[i].bsecond)))
+        
     #making trigger cards
    
 def m_task():
@@ -987,7 +1012,7 @@ def m_task():
     
     while True:
         
-        
+        #print('-x- task_handler -x-')
         lv.task_handler()
         lv.tick_inc(5)        
         current = utime.ticks_ms()
