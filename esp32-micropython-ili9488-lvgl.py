@@ -7,6 +7,7 @@ import time
 import machine
 import utime
 import network
+from imagetools import get_png_info, open_png
 
 sta_if = network.WLAN(network.STA_IF)
 
@@ -17,6 +18,14 @@ sta_if = network.WLAN(network.STA_IF)
 #TDIN = MOSI
 #TDO = MISO
 #TIRQ
+
+def wifi():
+    sta_if = network.WLAN(network.STA_IF)
+    sta_if.active(True)
+    sta_if.connect("norzam5001", "74221486")
+    while sta_if.isconnected() == False:
+        print(".")
+    print("connected")
 
 lv.init()
 
@@ -60,19 +69,17 @@ class Trigger:
         self.minutedur = 0
         self.seconddur = 0
         
-        self.isArmed            = False
-        self.isTriggered        = False
+        self.isArmed            = False #if True include in decision
+        self.isTriggered        = False 
         
-        self.isFlowSensorEnable = False
-        self.maxFlowLimit       = 0
-        self.minFlowLimit       = 0
-        self.minFlowTime        = 0
+        self.isFlowSensorEnable = False #if True run sensor engine
+        self.maxFlowLimit       = 0 # if True run flow (check I2C)
+        self.minFlowLimit       = 0 # if Hit check array for debounce. >80% consider hit
+        self.minFlowTime        = 0 # for debounce
         
-        self.isRainSensorEnable = False
+        self.isRainSensorEnable = False #also implement debounce
         self.rainSensorTimeCheck= False
-        
-        self.isMETapiEnable     = False
-        
+        self.isMETapiEnable     = False #requires WiFi enable
         self.isSoilSensorEnable = False
 
 clock = Clock()
@@ -82,32 +89,33 @@ trigger = []
 for i in range(0,10):
     trigger.append(Trigger())
 
-def m1():
+def m1(): #Splash screen
     scr = lv.obj()
     lv.scr_load(scr)
-    
-    #make container
-    con = lv.cont(scr)
-    con.set_auto_realign(True)
-    con.set_layout(lv.LAYOUT.CENTER)
-    con.align(scr, lv.ALIGN.CENTER,0,0)
-    con.set_fit(lv.FIT.TIGHT)
-    
-    #make label in container
-    label = lv.label(con)
-    label.set_text(
-""" This is the first iteration
-    of the water timer. The developer
-    is not responsible for any
-    damages caused by it. User is
-    advise to proceed cautiously""")
-    
-    btn = lv.btn(con)
-    label2 = lv.label(btn)
-    label2.set_text("I Accept!")
-    btn.set_event_cb(lambda obj, event: m2() if event == lv.EVENT.CLICKED else None)
+    scr.set_style_local_bg_color(lv.obj.PART.MAIN, lv.STATE.DEFAULT, lv.color_hex(0xffffff))
 
-def m2():
+    decoder = lv.img.decoder_create()
+    decoder.info_cb = get_png_info
+    decoder.open_cb = open_png
+
+    with open('bonsai-logo.png', 'rb') as f:
+              png_data = f.read()
+              
+    png_img_dsc = lv.img_dsc_t({
+        'data_size':len(png_data),
+        'data':png_data
+        })
+
+    img1 = lv.img(scr)
+    img1.set_src(png_img_dsc)
+    img1.fade_in(4500,0)
+    img1.align(scr, lv.ALIGN.CENTER,0,0)
+    img1.set_drag(False)
+    
+    time.sleep(5)
+    m5()
+
+def m2(): #not use - experiment
     print("This is callback for M2")
     
     scr = lv.obj()
@@ -135,7 +143,7 @@ def m2():
     label.set_text("Skip la")
     btn.set_event_cb(lambda obj, event: m4() if event == lv.EVENT.CLICKED else None)
     
-def m3():
+def m3(): 
     
     global trigger
     
@@ -595,10 +603,10 @@ def m5(): #Main home screen
     cont.set_height(20)
     cont.set_fit2(lv.FIT.PARENT, lv.FIT.TIGHT)
     lbl_today = lv.label(cont)
-    lbl_today.align(cont, lv.ALIGN.IN_LEFT_MID, 0, 0)
+    lbl_today.align(cont, lv.ALIGN.IN_LEFT_MID, 20, 0)
     
     def gui_refresh_date():
-        lbl_today.set_text("Sunday     14-01-2021     {}:{}:{}".format(str(clock.hour),str(clock.minute),str(clock.second)))
+        lbl_today.set_text("Sunday     14-01-2021     {:02}:{:02}:{:02}".format(int(clock.hour),int(clock.minute),int(clock.second)))
     
     lv.task_create(lambda task: gui_refresh_date(), 100, lv.TASK_PRIO.HIGH, None)
     
@@ -863,10 +871,8 @@ def m6_1(data): #wifi password window
            #if successful
            log.set_text('Successfully connected')
            log.align(cont1, lv.ALIGN.OUT_BOTTOM_MID,0,10)
-           
-               
-
-    
+         
+            
     #main page
     scr = lv.obj()
     lv.scr_load(scr)
@@ -913,7 +919,7 @@ def m6_1(data): #wifi password window
     password.set_size(200,50)
     password.align(lbl_in_pass, lv.ALIGN.OUT_BOTTOM_MID,0,10)
     password.set_pwd_mode(True)
-    password.set_text("")
+    password.set_text("74221486")
     
     keyboard = lv.keyboard(scr)
     keyboard.set_size(320, 480 // 2)
@@ -968,12 +974,9 @@ def m7(): # dashboard
     tab1.set_layout(lv.LAYOUT.PRETTY_TOP)
     '''
     
-<<<<<<< HEAD
     #tab1.set_auto_realign(True)
     #tab1.set_layout(lv.LAYOUT.PRETTY_TOP)
     
-=======
->>>>>>> 89a4ca1bbb504fb832023ae83c028e991a8fe279
     cont1 = lv.cont(tab1)
     cont1.align(tab1, lv.ALIGN.IN_TOP_MID, 0, 10)
     cont1.set_fit2(lv.FIT.PARENT, lv.FIT.TIGHT)
@@ -986,7 +989,8 @@ def m7(): # dashboard
     for i in range(0, len(trigger)):
         
         card.append(lv.cont(cont1))
-<<<<<<< HEAD
+
+
         card[i].set_fit2(lv.FIT.TIGHT, lv.FIT.TIGHT)
         
         '''set color.'''
@@ -996,27 +1000,28 @@ def m7(): # dashboard
         if trigger[i].isTriggered == False:
             card[i].set_style_local_bg_color(lv.obj.PART.MAIN, lv.STATE.DEFAULT, lv.color_hex(0xffcccc))
                    
-=======
+
         card[i].set_width(220)
         card[i].set_height(100)
->>>>>>> 89a4ca1bbb504fb832023ae83c028e991a8fe279
+
         
         lbl_trigger = lv.label(card[i])
         lbl_trigger.align(card[i], lv.ALIGN.IN_TOP_LEFT,0,0)
         lbl_trigger.set_text("Trigger " + str(i))
         
-<<<<<<< HEAD
+
         lbl_start = lv.label(card[i])
         lbl_start.align(lbl_trigger, lv.ALIGN.OUT_BOTTOM_LEFT,0,0)
-        lbl_start.set_text("On : " + "{}:{}:{}".format(str(trigger[i].bhour), str(trigger[i].bminute), str(trigger[i].bsecond)))
+        lbl_start.set_text("On : " + "{:02}:{:02}:{:02}".format(int(trigger[i].bhour), int(trigger[i].bminute), int(trigger[i].bsecond)))
         
-=======
->>>>>>> 89a4ca1bbb504fb832023ae83c028e991a8fe279
+
     #making trigger cards
    
 def m_task():
     
-    m5()
+    wifi()
+    
+    m1()
     
     current = 0
     previous = 0
