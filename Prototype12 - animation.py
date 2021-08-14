@@ -4,7 +4,7 @@ PROTOTYPE
 
 import espidf as esp
 import lvgl as lv
-import lvesp32
+#import lvesp32
 import micropython
 import gc
 import time
