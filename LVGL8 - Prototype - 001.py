@@ -9,18 +9,18 @@ lv.init()
 import btree
 import network
 import utime
+import random
 
 sta_if = network.WLAN(network.STA_IF)
 sta_if.active(True)
 sta_if.connect('norzam5001', '74221486')
 
 #LCD_MOSI = DO NOT CONENCT
-
 #TCLK = CLK
 #TCS = 25
 #TDIN = MOSI
 #TDO = MISO
-#TIRQ
+#TIRQ = DO NOT CONNECT
 
 
 from ili9XXX import ili9488
@@ -43,7 +43,6 @@ def timed_function(f, *args, **kwargs):
 
 '''Setting Up DB : Using btree'''
 
-
 def start_db():
         
     try:
@@ -64,17 +63,33 @@ def start_db():
         
     return db
 
-def create_trigger(unique_id, name, begin, duration):
+def create_trigger(unique_id, name, begin, duration, flow_enable_state, flow_debounce_state, flow_max_state, flow_max_val, rain_enable_state, rain_debounce_state):
     #check all key and create new unique id
     
     temp  = {
              'name':name,
-             'begin':str("{:06}".format(begin)),
-             'duration':str(duration),
+             'begin':begin,
+             'duration':duration,
              'end':'000000',
              'arm':False,
              'isTriggered':False,
-             }
+             'flow_enable_state':flow_enable_state,
+             'flow_debounce_state':flow_debounce_state,
+             'flow_max_state':flow_max_state,
+             'flow_max_val': flow_max_val,
+             'flow_read_pin': 999,
+             'rain_enable_state': rain_enable_state,
+             'rain_debounce_state':rain_debounce_state,
+             'rain_read_pin': 777,
+             'cal_mond':True,
+             'cal_tues':True,
+             'cal_wed':True,
+             'cal_thurs':True,
+             'cal_fri':True,
+             'cal_sat':True,
+             'cal_sun':True,
+            }
+        
     print(temp)
     db[str(unique_id).encode('UTF-8')] = str(temp).encode('UTF-8')
     
@@ -108,7 +123,9 @@ def home():
         
         key = str(table.get_cell_value(row.x, col.x))
 
-        msb_edit_table(key)
+        '''only show msgbox when column 0 is selected'''
+        if col.x == 0:
+            msb_edit_table(key)
 
         global tabledata
         tabledata = e
@@ -124,6 +141,7 @@ def home():
     label.set_text("List of Triggers and Keys")
     label.align_to(scr, lv.ALIGN.TOP_LEFT, 10, 25)
     
+    '''create table'''
     table = lv.table(scr)
     table.align_to(label, lv.ALIGN.OUT_BOTTOM_LEFT, 5,5)
     
@@ -183,7 +201,6 @@ def home():
 
     '''
     textarea.add_text(" string " + '\0')
-
     '''
 
 def msb_edit_table(key):
@@ -230,9 +247,87 @@ def add_new():
         
         if param == "Reset minute":
             roller5.set_selected(0, lv.ANIM.ON)
-           
-        
+
+        if param == "Save":
+
+            '''storing settings in DB routine'''
             
+            print('Debug val')
+            
+            #textarea cannot be empty
+            key = text_area.get_text()
+
+            if key == "":
+                print('Key cannot be empty')
+                lv.msgbox(lv.scr_act(), "Error", "Tigger name cannot be empty", [], True)
+            
+            #textare cannot be more than 8 char
+            if len(key) >= 8:
+                print('Trigger name too long')
+                lv.msgbox(lv.scr_act(), "Error", "Tigger name too long", [], True)
+            
+            print(text_area.get_text())
+
+            #beginhour
+            bhour = roller1.get_selected()
+            bminute = roller2.get_selected()
+            bsecs = roller3.get_selected()
+
+            begin_time = "{:02}{:02}{:02}".format(bhour, bminute, bsecs)
+            print(begin_time)
+
+            #duration
+            hdur = int(roller4.get_selected()) * 60 * 60
+            mdur = int(roller5.get_selected()) * 60
+            sdur = int(roller6.get_selected())
+
+            duration = str(hdur + mdur + sdur)
+            print(str(duration))
+                      
+            #enable flow sensor?
+            flow_enable_state = flow_sensor_switch.has_state(lv.STATE.CHECKED)
+            print(flow_enable_state)
+            
+            #check flow sensor for 5 sec
+            flow_debounce_state = flow_debounce_checkbox.has_state(lv.STATE.CHECKED)
+            print(flow_debounce_state)
+                       
+            #check min reading
+            flow_max_state = flow_debounce_checkbox.has_state(lv.STATE.CHECKED)
+            print(flow_max_state)
+
+            #max flow limit 
+            flow_max_val = flow_max_spinbox.get_value()
+            flow_max_val = flow_max_spinbox.get_value()
+            print(flow_max_val)
+
+            #enable rain sensor
+            rain_sensor_enable_state = rain_sensor_switch.has_state(lv.STATE.CHECKED)
+            print(rain_sensor_enable_state)
+
+            rain_debounce_state = rain_sensor_debounce.has_state(lv.STATE.CHECKED)
+            print(rain_debounce_state)
+            
+            #Generate keys to store in DB
+            '''create unique id'''
+            
+            def new_id():
+                return random.randint(0,9999)
+
+            temp_db_keys = []
+            for key in db:
+                temp_db_keys.append(eval(key))
+
+            temp_key = new_id()
+
+            if temp_key in temp_db_keys:
+                temp_key = new_id()
+                return temp_key
+               
+                        
+            create_trigger(unique_id=temp_key, name=key, begin=begin_time, duration=duration, flow_enable_state=flow_enable_state,flow_debounce_state=flow_debounce_state, flow_max_state=flow_max_state, flow_max_val=flow_max_val, rain_enable_state=rain_sensor_enable_state, rain_debounce_state=rain_debounce_state)
+
+          
     def ta_event_cb(e, keyboard):
         
         code = e.get_code()
@@ -253,8 +348,7 @@ def add_new():
     '''main scr'''
     scr = lv.obj()
     scr.clean()
-    
-    
+        
     lv.scr_load(scr)
         
     btn_cancel = lv.btn(scr)
@@ -264,6 +358,7 @@ def add_new():
     
     btn_save = lv.btn(scr)
     btn_save.align_to(btn_cancel, lv.ALIGN.OUT_RIGHT_TOP,185,0)
+    btn_save.add_event_cb(lambda e: btn_event(e, "Save"), lv.EVENT.CLICKED, None)
     btn_save_text = lv.label(btn_save)
     btn_save_text.set_text('Save')
     
@@ -293,7 +388,7 @@ def add_new():
     
     cont_width = 280
     
-    '''cont'''
+    '''cont : Roller Time '''
     cont = lv.obj(lv.scr_act())
     cont.align_to(label3, lv.ALIGN.OUT_BOTTOM_LEFT,0,0)
     cont.set_height(150)
@@ -373,7 +468,7 @@ def add_new():
     label7.align_to(cont, lv.ALIGN.OUT_BOTTOM_LEFT,0,10)
     label7.set_text('Set Duration')
     
-    '''cont 2'''
+    '''cont 2 : Roller Duration'''
     
     cont2 = lv.obj(scr)
     cont2.align_to(label7, lv.ALIGN.OUT_BOTTOM_LEFT,0,0)
@@ -437,65 +532,65 @@ def add_new():
     label10.align_to(cont2, lv.ALIGN.OUT_BOTTOM_LEFT,0,10)
     label10.set_text('Set Automatic disable trigger settings')
     
-    '''cont 3'''
+    '''cont 3 : Flow sensor'''
     
     cont3 = lv.obj(scr)
     cont3.align_to(label10, lv.ALIGN.OUT_BOTTOM_LEFT,0,0)
     cont3.set_height(150)
     cont3.set_width(cont_width)
     
-    label11 = lv.label(cont3)
-    label11.align_to(cont3, lv.ALIGN.TOP_LEFT,0, 5)
-    label11.set_text("Enable Flow Sensor")
+    flow_sensor_lbl = lv.label(cont3)
+    flow_sensor_lbl.align_to(cont3, lv.ALIGN.TOP_LEFT,0, 5)
+    flow_sensor_lbl.set_text("Enable Flow Sensor")
     
-    switch_flow = lv.switch(cont3)
-    switch_flow.align_to(cont3, lv.ALIGN.TOP_RIGHT,0 , -5)
+    flow_sensor_switch = lv.switch(cont3)
+    flow_sensor_switch.align_to(cont3, lv.ALIGN.TOP_RIGHT,0 , -5)
     
     #label12 = lv.label(cont3)
     #label12.align_to(label11, lv.ALIGN.OUT_BOTTOM_LEFT,0,0)
     #label12.set_text('5 sec threshold')
     
-    checkbox1 = lv.checkbox(cont3)
-    checkbox1.align_to(label11, lv. ALIGN.OUT_BOTTOM_LEFT,5,10)
-    checkbox1.set_text("Min reading 5 sec")
+    flow_debounce_checkbox = lv.checkbox(cont3)
+    flow_debounce_checkbox.align_to(flow_sensor_lbl, lv. ALIGN.OUT_BOTTOM_LEFT,5,10)
+    flow_debounce_checkbox.set_text("Debounce protection")
 
-    label13 = lv.label(cont3)
-    label13.align_to(checkbox1, lv.ALIGN.OUT_BOTTOM_LEFT,0,5)
-    label13.set_text('Max Flow (l): ')
+    flow_max_checkbox = lv.checkbox(cont3)
+    flow_max_checkbox.align_to(flow_debounce_checkbox, lv.ALIGN.OUT_BOTTOM_LEFT,0,5)
+    flow_max_checkbox.set_text('Max flow protection')
 
-    spinbox1 = lv.spinbox(cont3)
-    spinbox1.align_to(label13, lv.ALIGN.OUT_BOTTOM_LEFT,0,0)
-    spinbox1.set_range(0, 9999)
+    flow_max_spinbox = lv.spinbox(cont3)
+    flow_max_spinbox.align_to(flow_max_checkbox, lv.ALIGN.OUT_BOTTOM_LEFT,0,0)
+    flow_max_spinbox.set_range(0, 9999)
 
-    h = spinbox1.get_height()
+    h = flow_max_spinbox.get_height()
 
-    btn_spinbox1 = lv.btn(cont3)
-    btn_spinbox1.align_to(spinbox1, lv.ALIGN.OUT_RIGHT_TOP,0,0)
-    btn_spinbox1.set_style_bg_img_src(lv.SYMBOL.PLUS, 0)
-    btn_spinbox1.set_size(h,h)
+    flow_max_spinbox_btn1 = lv.btn(cont3)
+    flow_max_spinbox_btn1.align_to(flow_max_spinbox, lv.ALIGN.OUT_RIGHT_TOP,0,0)
+    flow_max_spinbox_btn1.set_style_bg_img_src(lv.SYMBOL.PLUS, 0)
+    flow_max_spinbox_btn1.set_size(h,h)
 
-    btn_spinbox2 = lv.btn(cont3)
-    btn_spinbox2.align_to(btn_spinbox1, lv.ALIGN.OUT_RIGHT_TOP,0,0)
-    btn_spinbox2.set_style_bg_img_src(lv.SYMBOL.MINUS, 0)
-    btn_spinbox2.set_size(h,h)
+    flow_max_spinbox_btn2 = lv.btn(cont3)
+    flow_max_spinbox_btn2.align_to(flow_max_spinbox_btn1, lv.ALIGN.OUT_RIGHT_TOP,0,0)
+    flow_max_spinbox_btn2.set_style_bg_img_src(lv.SYMBOL.MINUS, 0)
+    flow_max_spinbox_btn2.set_size(h,h)
 
-    '''Rain sensor'''
+    '''Cont 4: Rain sensor'''
 
     cont4 = lv.obj(scr)
     cont4.align_to(cont3, lv.ALIGN.OUT_BOTTOM_LEFT,0, 10)
     cont4.set_height(90)
     cont4.set_width(cont_width)
 
-    label13 = lv.label(cont4)
-    label13.align_to(cont4, lv.ALIGN.TOP_LEFT,0, 5)
-    label13.set_text("Enable Rain Sensor")
+    rain_sensor_lbl = lv.label(cont4)
+    rain_sensor_lbl.align_to(cont4, lv.ALIGN.TOP_LEFT,0, 5)
+    rain_sensor_lbl.set_text("Enable Rain Sensor")
     
-    switch_flow2 = lv.switch(cont4)
-    switch_flow2.align_to(cont4, lv.ALIGN.TOP_RIGHT,0 , -5)
+    rain_sensor_switch = lv.switch(cont4)
+    rain_sensor_switch.align_to(cont4, lv.ALIGN.TOP_RIGHT,0 , -5)
 
-    checkbox2 = lv.checkbox(cont4)
-    checkbox2.align_to(label13, lv. ALIGN.OUT_BOTTOM_LEFT,5,10)
-    checkbox2.set_text("Min reading 5 sec")
+    rain_sensor_debounce = lv.checkbox(cont4)
+    rain_sensor_debounce.align_to(rain_sensor_lbl, lv. ALIGN.OUT_BOTTOM_LEFT,5,10)
+    rain_sensor_debounce.set_text("Debounce protection")
 
     '''Calender'''
 
@@ -508,38 +603,53 @@ def add_new():
     label14.align_to(cont5, lv.ALIGN.TOP_LEFT,0, 5)
     label14.set_text("Enable days")
     
-    switch_flow3 = lv.switch(cont5)
-    switch_flow3.align_to(cont5, lv.ALIGN.TOP_RIGHT,0 , -5)
+    calendar_switch = lv.switch(cont5)
+    calendar_switch.align_to(cont5, lv.ALIGN.TOP_RIGHT,0 , -5)
 
-    checkbox3 = lv.checkbox(cont5)
-    checkbox3.align_to(label14, lv. ALIGN.OUT_BOTTOM_LEFT,0,10)
-    checkbox3.set_text("Monday")
+    cal_1_checkbox = lv.checkbox(cont5)
+    cal_1_checkbox.align_to(label14, lv. ALIGN.OUT_BOTTOM_LEFT,0,10)
+    cal_1_checkbox.set_text("Monday")
 
-    checkbox4 = lv.checkbox(cont5)
-    checkbox4.align_to(checkbox3, lv. ALIGN.OUT_BOTTOM_LEFT,0,10)
-    checkbox4.set_text("Tuesday")
+    cal_2_checkbox = lv.checkbox(cont5)
+    cal_2_checkbox.align_to(cal_1_checkbox, lv. ALIGN.OUT_BOTTOM_LEFT,0,10)
+    cal_2_checkbox.set_text("Tuesday")
 
-    checkbox5 = lv.checkbox(cont5)
-    checkbox5.align_to(checkbox4, lv. ALIGN.OUT_BOTTOM_LEFT,0,10)
-    checkbox5.set_text("Wednesday")
+    cal_3_checkbox = lv.checkbox(cont5)
+    cal_3_checkbox.align_to(cal_2_checkbox, lv. ALIGN.OUT_BOTTOM_LEFT,0,10)
+    cal_3_checkbox.set_text("Wednesday")
 
-    checkbox6 = lv.checkbox(cont5)
-    checkbox6.align_to(checkbox5, lv. ALIGN.OUT_BOTTOM_LEFT,0,10)
-    checkbox6.set_text("Thursday")
+    cal_4_checkbox = lv.checkbox(cont5)
+    cal_4_checkbox.align_to(cal_3_checkbox, lv. ALIGN.OUT_BOTTOM_LEFT,0,10)
+    cal_4_checkbox.set_text("Thursday")
 
-    checkbox7 = lv.checkbox(cont5)
-    checkbox7.align_to(checkbox6, lv. ALIGN.OUT_BOTTOM_LEFT,0,10)
-    checkbox7.set_text("Friday")
+    cal_5_checkbox = lv.checkbox(cont5)
+    cal_5_checkbox.align_to(cal_4_checkbox, lv. ALIGN.OUT_BOTTOM_LEFT,0,10)
+    cal_5_checkbox.set_text("Friday")
 
-    checkbox8 = lv.checkbox(cont5)
-    checkbox8.align_to(checkbox7, lv. ALIGN.OUT_BOTTOM_LEFT,0,10)
-    checkbox8.set_text("Saturday")
+    cal_6_checkbox = lv.checkbox(cont5)
+    cal_6_checkbox.align_to(cal_5_checkbox, lv. ALIGN.OUT_BOTTOM_LEFT,0,10)
+    cal_6_checkbox.set_text("Saturday")
 
-    checkbox9 = lv.checkbox(cont5)
-    checkbox9.align_to(checkbox8, lv. ALIGN.OUT_BOTTOM_LEFT,0,10)
-    checkbox9.set_text("Sunday")
+    cal_7_checkbox = lv.checkbox(cont5)
+    cal_7_checkbox.align_to(cal_6_checkbox, lv. ALIGN.OUT_BOTTOM_LEFT,0,10)
+    cal_7_checkbox.set_text("Sunday")
 
+
+def start_trigger():
     
+    #do checking on each ARMED, CALENDER trigger in db
+    #check current time against trigger time. if true change pinstate to on 
+    pass
+
+def auto_off_trigger():
+
+    #do check on each pinState == On
+    
+
+    pass
+
+
+
 '''START'''
 
 def system_loop():
@@ -553,6 +663,7 @@ def system_loop():
         
       lv.task_handler()
       lv.tick_inc(5)  
+
   
 #system_loop()  
 
@@ -560,4 +671,4 @@ start_db()
 home()
 
 
-    
+     
