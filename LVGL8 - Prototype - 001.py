@@ -4,16 +4,24 @@ PROTOTYPE
 
 import espidf as esp
 import lvgl as lv
+
 lv.init()
 
 import btree
 import network
 import utime
 import random
+import gc
 
 sta_if = network.WLAN(network.STA_IF)
 sta_if.active(True)
 sta_if.connect('norzam5001', '74221486')
+print('connecting wifi')
+while sta_if.isconnected() != True:
+    print(".")
+    utime.sleep(1)
+print('connected')
+
 
 #LCD_MOSI = DO NOT CONENCT
 #TCLK = CLK
@@ -22,10 +30,9 @@ sta_if.connect('norzam5001', '74221486')
 #TDO = MISO
 #TIRQ = DO NOT CONNECT
 
-
 from ili9XXX import ili9488
 disp = ili9488(miso=19, mosi=23, clk=18, cs=5, dc=26, rst=27, power=14, backlight=-1, backlight_on=0, power_on=0, rot=0x80,
-        spihost=esp.VSPI_HOST, mhz=50, factor=16, hybrid=True, width=320, height=480,
+        spihost=esp.VSPI_HOST, mhz=50, factor=8, hybrid=True, width=320, height=480,
         invert=False, double_buffer=True, half_duplex=True)
 
 from xpt2046 import xpt2046
@@ -51,7 +58,6 @@ def start_db():
         f = open("mydb", "w+b")
         
     global db
-    
     db = btree.open(f)
 
     for key in db:
@@ -667,8 +673,8 @@ def system_loop():
   
 #system_loop()  
 
-start_db()
-home()
+#start_db()
+#home()
 
 
      
