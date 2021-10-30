@@ -131,27 +131,54 @@ chart_hourly_label.align_to(chart_hourly, lv.ALIGN.OUT_BOTTOM_LEFT,-50,5)
 chart_hourly_label.set_text('hourly chart')
 chart_hourly_label.set_style_text_color(lv.color_hex(0x1aec1a),0)
 
+
+'''loop counters'''
 minute_counter = 0
+current_tick = 0;
+previous_tick = 0;
+treshold_tick = 1000;
+second_counter = 0
 
 '''Main Loop : update chart after kline'''
 while True:
-    utime.sleep(60)
-    label_log.set_text("Updating Data")
-    data = urequests.get(url)
-    data_j = json.loads(data.text)
-    current_btc_price = int(float(data_j['price']))
-    chart.set_next_value(ser1, current_btc_price)
-    label.set_text("{} : {:2} ".format(data_j['symbol'], float(data_j['price'])))
-    label_log.set_text("Data Updated" + str(utime.gmtime()))
-        
-    '''update hourly chart'''
-    if minute_counter > 59:
-        label_log.set_text("Fetching new hourly Kline")
-        klines_data(chart_hourly, ser2, '1h', ymin, ymax)
-        minute_counter = 0
-        label_log.set_text("Hourly kline updated")
     
-    minute_counter += 1
+    current_tick = utime.ticks_ms()
+
+    '''update every 60sec'''
+    if second_counter > 59 :
+        second_counter = 0
+        label_log.set_text("Updating Data")
+        data = urequests.get(url)
+        data_j = json.loads(data.text)
+        current_btc_price = int(float(data_j['price']))
+        chart.set_next_value(ser1, current_btc_price)
+        label.set_text("{} : {:2} ".format(data_j['symbol'], float(data_j['price'])))
+        label_log.set_text("Data Updated" + str(utime.gmtime()))
+            
+        '''update hourly chart'''
+        if minute_counter > 59:
+            label_log.set_text("Fetching new hourly Kline")
+            klines_data(chart_hourly, ser2, '1h', ymin, ymax)
+            minute_counter = 0
+            label_log.set_text("Hourly kline updated")
+    
+        minute_counter += 1
+
+    '''update every second'''
+    if current_tick - previous_tick > treshold_tick:
+    
+        '''update minute counter'''
+        if update_counter < 0 :
+            update_counter = 59
+        
+        chart_label.set_text('1 minute chart : Next update {}'.format(update_counter))
+        update_counter -= 1
+
+        previous_tick = current_tick
+        second_counter += 1
+       
+    
+
     
 
     
