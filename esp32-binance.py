@@ -151,6 +151,24 @@ while True:
         data = urequests.get(url)
         data_j = json.loads(data.text)
         current_btc_price = int(float(data_j['price']))
+        
+        '''adjust the chart range if value goes above and below'''
+        if current_btc_price > ymax:
+            ymax += 500
+            chart.set_range(lv.chart.AXIS.PRIMARY_Y, ymin, ymax)
+            chart_hourly.set_range(lv.chart.AXIS.PRIMARY_Y, ymin, ymax)
+            label_log.set_text("Chart range updated")
+
+            
+        if current_btc_price < ymin:
+            ymin -= 500
+            chart.set_range(lv.chart.AXIS.PRIMARY_Y, ymin, ymax)
+            chart_hourly.set_range(lv.chart.AXIS.PRIMARY_Y, ymin, ymax)
+            label_log.set_text("Chart range updated")
+
+        
+        
+        '''plot to chart'''
         chart.set_next_value(ser1, current_btc_price)
         label.set_text("{} : {:2} ".format(data_j['symbol'], float(data_j['price'])))
         label_log.set_text("Data Updated" + str(utime.gmtime()))
