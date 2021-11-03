@@ -19,6 +19,7 @@ WIDTH=320
 
 scr = lv.obj()
 scr.set_style_bg_color(lv.color_hex(0x089e85),0)
+scr.clear_flag(lv.obj.FLAG.SCROLLABLE) #do not scroll
 btn = lv.btn(scr)
 btn.set_width(WIDTH)
 btn.set_style_radius(lv.STATE.DEFAULT,0)
@@ -28,7 +29,7 @@ btn.set_style_bg_color(lv.color_hex(0x089e85),0)
 
 label = lv.label(btn)
 label.set_style_text_font(lv.font_montserrat_14,0)
-label.set_text('WHATSAPP LGVL')
+label.set_text('WHATZAPP LGVL')
 label.align_to(btn, lv.ALIGN.LEFT_MID,10,0)
 
 label2 = lv.label(btn)
@@ -46,6 +47,10 @@ tab3 = tabv.add_tab("CALLS")
 
 tabs_btn = tabv.get_tab_btns()
 tabs_btn.set_style_text_color(lv.color_hex(0xffffff),0)
+tabs_btn.set_style_bg_color(lv.color_hex(0x0516d), lv.PART.ITEMS | lv.STATE.CHECKED)
+tabs_btn.set_style_text_color(lv.color_hex(0xffffff), lv.PART.ITEMS | lv.STATE.CHECKED)
+tabs_btn.set_style_border_color(lv.color_hex(0x9df8e9), lv.PART.ITEMS | lv.STATE.CHECKED)
+
 tab1.set_flex_flow(lv.FLEX_FLOW.COLUMN)
 tab1.set_style_pad_row(lv.STATE.DEFAULT,0)
 tab1.set_style_pad_all(lv.STATE.DEFAULT,0)
@@ -56,32 +61,30 @@ cards = []
 
 for i in range (0,10):
     cards.append(lv.btn(tab1)) 
-    cards[i].set_width(WIDTH-10)
+    cards[i].set_width(WIDTH)
     cards[i].set_height(lv.SIZE.CONTENT)
     cards[i].set_style_bg_color(lv.color_hex(0xffffff),0)
     cards[i].set_style_radius(lv.STATE.DEFAULT, 0)
     cards[i].set_style_pad_row(lv.STATE.DEFAULT, 1)
 
-    cirr = lv.btn(cards[i])
-    cirr.set_style_bg_color(lv.color_hex(0xced0cf),0)
-    cirr.set_size(30,30)
-    cirr.align_to(cards[i], lv.ALIGN.LEFT_MID, 5, 0)
-    cirr.set_style_radius(lv.STATE.DEFAULT, lv.RADIUS.CIRCLE)
+    image = lv.btn(cards[i])
+    image.set_style_bg_color(lv.color_hex(0xced0cf),0)
+    image.set_size(40,40)
+    image.align_to(cards[i], lv.ALIGN.LEFT_MID, 5, 0)
+    image.set_style_radius(lv.RADIUS.CIRCLE,0)
 
-    clabel = lv.label(cards[i])
-    clabel.set_style_text_font(lv.font_montserrat_14,0)
-    clabel.set_style_text_color(lv.color_hex(0x000000),0)
-    clabel.set_text('{}'.format(name[i]))
-    clabel.align_to(cards[i], lv.ALIGN.OUT_TOP_LEFT, 70, 25)
+    card_label_name = lv.label(cards[i])
+    card_label_name.set_style_text_font(lv.font_montserrat_14,0)
+    card_label_name.set_style_text_color(lv.color_hex(0x000000),0)
+    card_label_name.set_text('{}'.format(name[i]))
+    card_label_name.align_to(cards[i], lv.ALIGN.OUT_TOP_LEFT, 70, 25)
 
-    cclabel = lv.label(cards[i])
-    cclabel.set_style_text_font(lv.font_montserrat_14,0)
-    cclabel.set_style_text_color(lv.color_hex(0x5f5f5f),0)
-    cclabel.set_text('Lorem ipsum{}'.format(i))
-    cclabel.align_to(clabel, lv.ALIGN.OUT_BOTTOM_LEFT,0, 5)
-
+    card_label_msg = lv.label(cards[i])
+    card_label_msg.set_style_text_font(lv.font_montserrat_14,0)
+    card_label_msg.set_style_text_color(lv.color_hex(0x5f5f5f),0)
+    card_label_msg.set_text('Lorem ipsum{}'.format(i))
+    card_label_msg.align_to(card_label_name, lv.ALIGN.OUT_BOTTOM_LEFT,0, 5)
 
     tabv.set_height(lv.SIZE.CONTENT)
-
 
 lv.scr_load(scr)
