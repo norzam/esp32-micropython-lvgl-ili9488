@@ -8,7 +8,7 @@ import utime
 
 from ili9XXX import ili9488
 disp = ili9488(miso=19, mosi=23, clk=18, cs=5, dc=26, rst=27, power=14, backlight=-1, backlight_on=0, power_on=0, rot=0x80,
-        spihost=VSPI_HOST, mhz=50, factor=16, hybrid=True, width=320, height=480,
+        spihost=VSPI_HOST, mhz=60, factor=16, hybrid=True, width=320, height=480,
         invert=False, double_buffer=True, half_duplex=False, initialize=True)
 
 from xpt2046 import xpt2046
@@ -65,8 +65,8 @@ for i in range (0,10):
     cards[i].set_height(lv.SIZE.CONTENT)
     cards[i].set_style_bg_color(lv.color_hex(0xffffff),0)
     cards[i].set_style_radius(lv.STATE.DEFAULT, 0)
-    cards[i].set_style_pad_row(lv.STATE.DEFAULT, 1)
-
+    cards[i].set_style_border_color(lv.color_hex(0xffffff),0)
+    
     image = lv.btn(cards[i])
     image.set_style_bg_color(lv.color_hex(0xced0cf),0)
     image.set_size(40,40)
@@ -81,7 +81,7 @@ for i in range (0,10):
 
     card_label_msg = lv.label(cards[i])
     card_label_msg.set_style_text_font(lv.font_montserrat_14,0)
-    card_label_msg.set_style_text_color(lv.color_hex(0x5f5f5f),0)
+    card_label_msg.set_style_text_color(lv.color_hex(0x688c86),0)
     card_label_msg.set_text('Lorem ipsum{}'.format(i))
     card_label_msg.align_to(card_label_name, lv.ALIGN.OUT_BOTTOM_LEFT,0, 5)
 
