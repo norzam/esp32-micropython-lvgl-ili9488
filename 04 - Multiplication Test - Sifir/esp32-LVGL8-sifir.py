@@ -94,11 +94,23 @@ def button_event(obj, question, answer):
                 answer.set_text(lv.SYMBOL.RIGHT)
                 obj.set_style_bg_color(lv.color_hex(0x0ed145),0)
                 print('Correct Answer')
+
+                def gui_refresh_color(): 
+                        obj.set_style_bg_color(lv.color_hex(0x0d47a1),0)
+
+                lv.timer_create(lambda task: gui_refresh_color(), 10, None)
+                
                 print(answer)
                 
         if answer_int != question.answer_real:
                 answer.set_text(lv.SYMBOL.CLOSE)
                 obj.set_style_bg_color(lv.color_hex(0xfa3636),0)
+
+                def gui_refresh_color(): 
+                        obj.set_style_bg_color(lv.color_hex(0x0d47a1),0)
+
+                lv.timer_create(lambda task: gui_refresh_color(), 10, None)
+
                 print('Incorrect Answer')
                  
         #if wrong -> animate -> wait
